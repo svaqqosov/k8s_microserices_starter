@@ -2,7 +2,8 @@
 #  GO FIRST STAGE
 # ======================
 
-FROM golang:latest as builder
+FROM golang:alpine AS builder
+RUN apk update && apk add --no-cache git make
 USER ${USER}
 WORKDIR /usr/src/app
 COPY go.mod \
@@ -13,21 +14,17 @@ ENV GO111MODULE="on" \
   GOARCH="amd64" \
   GOOS="linux" \
   CGO_ENABLED="0"
-RUN apt-get clean \
-  && apt-get remove
+RUN make goprod
+RUN ls
 
 # ======================
 #  GO FINAL STAGE
 # ======================
 
-FROM builder
+FROM scratch
 WORKDIR /usr/src/app
-RUN apt-get update \
-  && apt-get install -y \
-  make \
-  vim \
-  build-essential
-COPY --from=builder . ./usr/src/app
-RUN make goprod
+COPY --from=builder /usr/src/app/.env /usr/src/app/
+COPY --from=builder /usr/src/app/cert/* /usr/src/app/cert/
+COPY --from=builder /usr/src/app/main /usr/src/app/
 EXPOSE 4000
 CMD ["./main"]

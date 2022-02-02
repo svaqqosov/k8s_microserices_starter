@@ -13,7 +13,7 @@ import (
 func Connection() *gorm.DB {
 	databaseURI := make(chan string, 1)
 
-	if os.Getenv("GO_ENV") != "production" {
+	if os.Getenv("SVC_ENV") != "production" {
 		databaseURI <- util.GodotEnv("DATABASE_URI_DEV")
 	} else {
 		databaseURI <- os.Getenv("DATABASE_URI_PROD")
@@ -26,7 +26,7 @@ func Connection() *gorm.DB {
 		logrus.Fatal(err.Error())
 	}
 
-	if os.Getenv("GO_ENV") != "production" {
+	if os.Getenv("SVC_ENV") != "production" {
 		logrus.Info("Connection to Database Successfully")
 	}
 
